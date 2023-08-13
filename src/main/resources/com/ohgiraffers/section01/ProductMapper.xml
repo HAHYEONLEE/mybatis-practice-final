@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ohgiraffers.section01.ProductMapper">
+
+
+    <resultMap id="productResultMap" type="com.ohgiraffers.section01.ProductDTO">
+        <id property="code" column="PRODUCT_CODE"/>
+        <result property="name" column="PRODUCT_NAME"/>
+        <result property="alcohol" column="PRODUCT_ALCOHOL"/>
+        <result property="origin" column="PRODUCT_ORIGIN"/>
+        <result property="categoryCode" column="CATEGORY_CODE"/>
+    </resultMap>
+
+    <select id="selectAllProduct" resultMap="productResultMap">
+        SELECT
+               PRODUCT_CODE
+             , PRODUCT_NAME
+             , PRODUCT_ALCOHOL
+             , PRODUCT_ORIGIN
+             , CATEGORY_CODE
+         FROM TB_PRODUCT
+        ORDER BY PRODUCT_CODE
+    </select>
+    <select id="searchProductByCategory" resultMap="productResultMap" parameterType="com.ohgiraffers.section01.SearchCriteria">
+        SELECT
+               PRODUCT_CODE
+             , PRODUCT_NAME
+             , PRODUCT_ALCOHOL
+             , PRODUCT_ORIGIN
+             , CATEGORY_CODE
+          FROM TB_PRODUCT
+         WHERE 1=1
+        <choose>
+            <when test = "value == 'IPA'">
+                AND CATEGORY_CODE IN (1)
+            </when>
+            <when test = "value == '라거'">
+                AND CATEGORY_CODE IN (2)
+            </when>
+            <when test = "value == '필스너'">
+                AND CATEGORY_CODE IN (3)
+            </when>
+            <otherwise>
+                AND CATEGORY_CODE IN (4)
+            </otherwise>
+        </choose>
+         ORDER BY PRODUCT_CODE
+    </select>
+
+    <select id="searchProductByAlcohol" resultMap="productResultMap" parameterType="hashmap">
+        SELECT
+               PRODUCT_CODE
+             , PRODUCT_NAME
+             , PRODUCT_ALCOHOL
+             , PRODUCT_ORIGIN
+             , CATEGORY_CODE
+          FROM TB_PRODUCT
+         WHERE 1=1
+        <if test="alcohol lte 5">
+            <![CDATA[
+            AND PRODUCT_ALCOHOL < #{ alcohol }
+            ]]>
+        </if>
+        <if test="alcohol lte 6">
+            AND PRODUCT_ALCOHOL BETWEEN 0 AND #{ alcohol }
+        </if>
+        <if test="alcohol lte 7">
+            AND PRODUCT_ALCOHOL BETWEEN 0 AND #{ alcohol }
+        </if>
+        <if test="alcohol gt 7">
+            AND PRODUCT_ALCOHOL BETWEEN 0 AND #{ alcohol }
+        </if>
+        ORDER BY PRODUCT_CODE
+    </select>
+
+
+    <insert id="insertProduct" parameterType="com.ohgiraffers.section01.ProductDTO">
+        INSERT
+          INTO TB_PRODUCT
+        (
+          PRODUCT_CODE
+        , PRODUCT_NAME
+        , PRODUCT_ALCOHOL
+        , PRODUCT_ORIGIN
+        , CATEGORY_CODE
+        )
+        VALUES
+         (
+           SEQ_PRODUCT_CODE.NEXTVAL
+         , #{ name }
+         , #{ alcohol, jdbcType=NUMERIC }
+         , #{ origin }
+         , #{ categoryCode }
+         )
+    </insert>
+
+    <update id="modifyProduct" parameterType="com.ohgiraffers.section01.ProductDTO">
+        UPDATE
+               TB_PRODUCT
+           SET PRODUCT_NAME = #{ name }
+             , PRODUCT_ALCOHOL = #{ alcohol, jdbcType=NUMERIC }
+             , PRODUCT_ORIGIN = #{ origin }
+             , CATEGORY_CODE = #{ categoryCode }
+         WHERE PRODUCT_CODE = #{ code }
+    </update>
+
+    <delete id="deleteProduct" parameterType="_int">
+        DELETE
+          FROM TB_PRODUCT
+         WHERE PRODUCT_CODE = #{ code }
+    </delete>
+
+</mapper>
